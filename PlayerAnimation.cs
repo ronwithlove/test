@@ -12,22 +12,26 @@ public class PlayerAnimation : MonoBehaviour {
 
 	private Animation playerAnim;
 	private AnimationState animState=AnimationState.Idle;
+	private PlayerMove playerMove; //要持有一个PlayerMove的引用，定义一个
+
 
 	void Awake(){
 		playerAnim=transform.Find ("Prisoner").GetComponent<Animation>();//如果没有就会返回null
+		playerMove=this.GetComponent<PlayerMove>();//赋值，就是要得到这个组价上的PlayerMove
 	}
-	// Use this for initialization
-	void Start () {
 
-	
-	}
-	
 	// Update is called once per frame
 	void Update () { //在这里去做一个动画状态的判断
 		if(GameController.gameState==GameState.Menu){
 			animState=AnimationState.Idle;
 		}else if(GameController.gameState==GameState.Playing){
 			animState=AnimationState.Run;
+			if(playerMove.targetTrack > playerMove.currentTrack){//目标大，当前小就往右
+				animState=AnimationState.TurnRight;
+			}
+			if(playerMove.targetTrack<playerMove.currentTrack){//反之亦然
+				animState=AnimationState.TurnLeft;
+			}	
 		}
 	}
 
@@ -35,6 +39,12 @@ public class PlayerAnimation : MonoBehaviour {
 		switch(animState){ //其实也是可以直接写在Update后面，没问题，这样写清晰一点
 		case AnimationState.Idle:PlayIdle();	break;
 		case AnimationState.Run:PlayAnim("run");break;
+		case AnimationState.TurnLeft:
+			GetComponentInChildren<Animation>()["left"].speed=2;//倍数，2倍速度播放
+			PlayAnim("left");break;
+		case AnimationState.TurnRight:
+			GetComponentInChildren<Animation>()["right"].speed=2;//这里如果3倍的话会循环播放， 因为原本动画时间没结束
+			PlayAnim("right");break;
 		}
 
 	}
